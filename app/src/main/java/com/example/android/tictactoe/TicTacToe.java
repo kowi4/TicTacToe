@@ -4,7 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
+import android.widget.GridView;
 import android.widget.Toast;
+
+import java.util.Random;
 
 /**
  * Created by Dominic on 2017-07-14.
@@ -17,9 +20,8 @@ public class TicTacToe {
     public int size = 9;
     public int width = 100;
     public int moveCount = 0;
-    public int ticTacToeSwitch = R.drawable.ic_cross_black_50dp;
+    public int ticTacToeSwitch = R.drawable.ic_circle_black_50dp;
     public int[] score = new int[size];
-    //DatabaseReference databaseReference;
 
     public TicTacToe(Context c, ImageAdapter imageAdapter, int size, int width) {
         mContext = c;
@@ -30,51 +32,51 @@ public class TicTacToe {
         for (int i = 0; i < size; i++) {
             score[i] = 0;
         }
+    }
 
-        //FirebaseDatabase database = FirebaseDatabase.getInstance();
-       // this.databaseReference = database.getReference("TicTacToeInstance");
+    public int computerMove() {
+        Random random = new Random();
+        int r = random.nextInt(9);
+        int count = 0;
+        while (score[r] != 0) {
+            r = random.nextInt(9);
+            if (count++ == 100) {
+                break;
+            }
+        }
+        return r;
+
     }
 
     // Method for checking for winner only 3x3 grid
-    public void checkForWinner() {
+    public boolean checkForWinner(int player) {
 
-        if (score[0] == score[1] && score[1] == score[2] && score[0] != 0) {
-            showWinner(score[0]);
-            moveCount = 0;
+        // diagonal
+
+        if ((score[0] == player) && (score[4] == player) && (score[8] == player)) {
+            return true;
         }
-        if (score[3] == score[4] && score[4] == score[5] && score[3] != 0) {
-            showWinner(score[3]);
-            moveCount = 0;
+
+        if ((score[2] == player) && (score[4] == player) && (score[6] == player)) {
+            return true;
         }
-        if (score[6] == score[7] && score[7] == score[8] && score[8] != 0) {
-            showWinner(score[6]);
-            moveCount = 0;
+
+        for (int i = 0; i <=6; i += 3) {
+            if ((score[i] == player) && (score[i + 1] == player) && (score[i + 2] == player)) {
+                return true;
+            }
         }
-        if (score[0] == score[3] && score[3] == score[6] && score[6] != 0) {
-            showWinner(score[0]);
-            moveCount = 0;
-        }
-        if (score[1] == score[4] && score[4] == score[7] && score[7] != 0) {
-            showWinner(score[1]);
-            moveCount = 0;
-        }
-        if (score[2] == score[5] && score[5] == score[8] && score[8] != 0) {
-            showWinner(score[2]);
-            moveCount = 0;
-        }
-        if (score[0] == score[4] && score[4] == score[8] && score[8] != 0) {
-            showWinner(score[0]);
-            moveCount = 0;
-        }
-        if (score[2] == score[4] && score[4] == score[6] && score[6] != 0) {
-            showWinner(score[2]);
-            moveCount = 0;
+        for (int j = 0; j <=2; j++) {
+            if ((score[j] == player) && (score[j + 3] == player) && (score[j + 6] == player)) {
+                return true;
+            }
         }
         moveCount++;
+        return false;
     }
 
     public void checkForDrow() {
-        if (moveCount == size/2+1) {
+        if (moveCount == size) {
             Toast.makeText(mContext, "draw", Toast.LENGTH_SHORT).show();
             newGameAlert();
         }
@@ -105,13 +107,13 @@ public class TicTacToe {
                 ((Activity) mContext).recreate();
             }
         });
-        alertBuild.setPositiveButton("No", new DialogInterface.OnClickListener() {
+        alertBuild.setPositiveButton("Exit", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 ((Activity) mContext).finish();
             }
         });
-        alertBuild.setOnCancelListener(null);
+        alertBuild.setCancelable(false);
         alertBuild.show();
     }
 
@@ -125,11 +127,12 @@ public class TicTacToe {
         }
         return ticTacToeSwitch;
     }
+
     public int multiplayerSwitch(boolean mode) {
         if (mode) {
             ticTacToeSwitch = R.drawable.ic_cross_black_50dp;
         } else {
-            ticTacToeSwitch =R.drawable.ic_circle_black_50dp;
+            ticTacToeSwitch = R.drawable.ic_circle_black_50dp;
         }
         return ticTacToeSwitch;
     }
