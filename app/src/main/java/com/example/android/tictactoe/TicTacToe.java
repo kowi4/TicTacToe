@@ -4,10 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
-import android.widget.GridView;
 import android.widget.Toast;
-
-import java.util.Random;
 
 /**
  * Created by Dominic on 2017-07-14.
@@ -15,13 +12,16 @@ import java.util.Random;
 
 public class TicTacToe {
 
-    private ImageAdapter imageAdapter;
-    private Context mContext;
+    public static int oPlayer = R.drawable.ic_circle_black_50dp;
+    public static int xPlayer = R.drawable.ic_cross_black_50dp;
     public int size = 9;
     public int width = 100;
     public int moveCount = 0;
     public int ticTacToeSwitch = R.drawable.ic_circle_black_50dp;
     public int[] score = new int[size];
+    public int computerMove;
+    private ImageAdapter imageAdapter;
+    private Context mContext;
 
     public TicTacToe(Context c, ImageAdapter imageAdapter, int size, int width) {
         mContext = c;
@@ -34,18 +34,65 @@ public class TicTacToe {
         }
     }
 
-    public int computerMove() {
-        Random random = new Random();
-        int r = random.nextInt(9);
-        int count = 0;
-        while (score[r] != 0) {
-            r = random.nextInt(9);
-            if (count++ == 100) {
-                break;
-            }
-        }
-        return r;
+    // Algorytm MiniMax
+//-----------------
+    int[] minimax(int player, int level) {
+        int counter = 0;
+        int w = 0;
+        // check for winner
+        for (int i = 0; i < 9; i++)
+            if (score[i] == 0) {
+                score[i] = player;
+                w = i;  // gdyby był remis
+                counter++;     // zliczamy wolne pola
 
+                boolean test = checkForWinner(player);
+
+                score[i] = 0;
+                if (test) {
+                    if (level == 0) {
+                        //score[i] = player;
+                        computerMove = i;
+                    }
+                    return new int[]{player == xPlayer ? -1 : 1, w};
+                }
+            }
+
+        // sprawdzamy, czy jest remis
+
+        if (counter == 1) {
+            if (level == 0) {
+                //score[w] = player;
+                computerMove = w;
+            }
+            return new int[]{0, w};
+        }
+
+        // wybieramy najkorzystniejszy ruch dla gracza
+
+        int v[];
+        int vmax;
+
+        vmax = player == xPlayer ? 2 : -2;
+
+        for (int i = 0; i < 9; i++)
+            if (score[i] == 0) {
+                score[i] = player;
+                v = minimax(player == xPlayer ? oPlayer : xPlayer, level + 1);
+                score[i] = 0;
+
+                if (((player == xPlayer) && (v[0] < vmax)) || ((player == oPlayer) && (v[0] > vmax))) {
+                    vmax = v[0];
+                    w = i;
+                }
+            }
+
+        if (level == 0) {
+            //score[w] = player;
+            computerMove = w;
+
+        }
+        return new int[]{vmax, w};
     }
 
     // Method for checking for winner only 3x3 grid
@@ -71,26 +118,23 @@ public class TicTacToe {
                 return true;
             }
         }
-        moveCount++;
+
         return false;
     }
 
-    public void checkForDrow() {
-        if (moveCount == size) {
-            Toast.makeText(mContext, "draw", Toast.LENGTH_SHORT).show();
-            newGameAlert();
-        }
-
-    }
-
-    // Method for showing Toast with winner
+    // Method for showing Toast with winner or draw
     public void showWinner(int winner) {
+
         if (winner == R.drawable.ic_circle_black_50dp) {
             Toast.makeText(mContext, "The winner is: Circle ", Toast.LENGTH_SHORT).show();
             imageAdapter.isNotGridClicable = true;
             newGameAlert();
-        } else {
+        } else if (winner == R.drawable.ic_cross_black_50dp) {
             Toast.makeText(mContext, "The winner is: Cross ", Toast.LENGTH_SHORT).show();
+            imageAdapter.isNotGridClicable = true;
+            newGameAlert();
+        } else if (winner == 0) {
+            Toast.makeText(mContext, "Draw", Toast.LENGTH_SHORT).show();
             imageAdapter.isNotGridClicable = true;
             newGameAlert();
         }
@@ -114,16 +158,16 @@ public class TicTacToe {
             }
         });
         alertBuild.setCancelable(false);
+
         alertBuild.show();
     }
 
-
     // Method for switching image cross/circle
     public int ticTacToeSwitch() {
-        if (ticTacToeSwitch == R.drawable.ic_cross_black_50dp) {
-            ticTacToeSwitch = R.drawable.ic_circle_black_50dp;
+        if (ticTacToeSwitch == xPlayer) {
+            ticTacToeSwitch = oPlayer;
         } else {
-            ticTacToeSwitch = R.drawable.ic_cross_black_50dp;
+            ticTacToeSwitch = xPlayer;
         }
         return ticTacToeSwitch;
     }
