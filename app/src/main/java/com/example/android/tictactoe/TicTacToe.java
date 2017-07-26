@@ -18,8 +18,8 @@ public class TicTacToe {
     public int width = 100;
     public int moveCount = 0;
     public int ticTacToeSwitch = R.drawable.ic_circle_black_50dp;
-    public int[] score = new int[size];
-    public int computerMove;
+    public int[] board = new int[size];
+    //public int computerMove;
     private ImageAdapter imageAdapter;
     private Context mContext;
 
@@ -30,69 +30,54 @@ public class TicTacToe {
         this.imageAdapter = imageAdapter;
 
         for (int i = 0; i < size; i++) {
-            score[i] = 0;
+            board[i] = 0;
         }
     }
 
-    // Algorytm MiniMax
-//-----------------
+    // based on http://eduinf.waw.pl/inf/utils/001_2008/0415.php
+    // minimax algorithm returning int[] {bestScore, computerMove]
+    // return bestScore =  1 if first player  wins
+    // return bestScore = -1 if second player loose
+    // return bestScore =  0 if first player doing best move
     int[] minimax(int player, int level) {
-        int counter = 0;
-        int w = 0;
-        // check for winner
-        for (int i = 0; i < 9; i++)
-            if (score[i] == 0) {
-                score[i] = player;
-                w = i;  // gdyby był remis
-                counter++;     // zliczamy wolne pola
-
+        int drawCounter = 0;
+        int computerMove = -1;
+        // check for game over with winner
+        for (int i = 0; i < size; i++)
+            if (board[i] == 0) {
+                board[i] = player;
+                computerMove = i;
+                drawCounter++;
                 boolean test = checkForWinner(player);
-
-                score[i] = 0;
+                board[i] = 0;
                 if (test) {
-                    if (level == 0) {
-                        //score[i] = player;
-                        computerMove = i;
-                    }
-                    return new int[]{player == xPlayer ? -1 : 1, w};
+                    return new int[]{player == xPlayer ? -1 : 1, computerMove};
                 }
             }
 
-        // sprawdzamy, czy jest remis
-
-        if (counter == 1) {
-            if (level == 0) {
-                //score[w] = player;
-                computerMove = w;
-            }
-            return new int[]{0, w};
+        // check for game over with draw
+        if (drawCounter == 1) {
+            return new int[]{0, computerMove};
         }
 
-        // wybieramy najkorzystniejszy ruch dla gracza
+        // looking for best move
+        int score[];
+        int bestScore;
 
-        int v[];
-        int vmax;
+        bestScore = player == xPlayer ? 2 : -2;
 
-        vmax = player == xPlayer ? 2 : -2;
+        for (int i = 0; i < size; i++)
+            if (board[i] == 0) {
+                board[i] = player;
+                score = minimax(player == xPlayer ? oPlayer : xPlayer, level + 1);
+                board[i] = 0;
 
-        for (int i = 0; i < 9; i++)
-            if (score[i] == 0) {
-                score[i] = player;
-                v = minimax(player == xPlayer ? oPlayer : xPlayer, level + 1);
-                score[i] = 0;
-
-                if (((player == xPlayer) && (v[0] < vmax)) || ((player == oPlayer) && (v[0] > vmax))) {
-                    vmax = v[0];
-                    w = i;
+                if (((player == xPlayer) && (score[0] < bestScore)) || ((player == oPlayer) && (score[0] > bestScore))) {
+                    bestScore = score[0];
+                    computerMove = i;
                 }
             }
-
-        if (level == 0) {
-            //score[w] = player;
-            computerMove = w;
-
-        }
-        return new int[]{vmax, w};
+        return new int[]{bestScore, computerMove};
     }
 
     // Method for checking for winner only 3x3 grid
@@ -100,21 +85,21 @@ public class TicTacToe {
 
         // diagonal
 
-        if ((score[0] == player) && (score[4] == player) && (score[8] == player)) {
+        if ((board[0] == player) && (board[4] == player) && (board[8] == player)) {
             return true;
         }
 
-        if ((score[2] == player) && (score[4] == player) && (score[6] == player)) {
+        if ((board[2] == player) && (board[4] == player) && (board[6] == player)) {
             return true;
         }
 
         for (int i = 0; i <=6; i += 3) {
-            if ((score[i] == player) && (score[i + 1] == player) && (score[i + 2] == player)) {
+            if ((board[i] == player) && (board[i + 1] == player) && (board[i + 2] == player)) {
                 return true;
             }
         }
         for (int j = 0; j <=2; j++) {
-            if ((score[j] == player) && (score[j + 3] == player) && (score[j + 6] == player)) {
+            if ((board[j] == player) && (board[j + 3] == player) && (board[j + 6] == player)) {
                 return true;
             }
         }

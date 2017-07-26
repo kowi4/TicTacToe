@@ -1,10 +1,12 @@
 package com.example.android.tictactoe;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
@@ -14,16 +16,20 @@ import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import static java.lang.Math.sqrt;
 
 public class MainActivity extends AppCompatActivity {
-    // 9 100 //16 75// 25 60 // 36 50 // 49 43 // 64 37 / 81 33 / 100 30
-
-    public boolean mode = true;
+    private static final String PREFERENCES_NAME = "ticTacToePreferences";
+    private static final String PREFERENCES_TEXT_FIELD = "mode";
+    public boolean mode;
     ImageAdapter imageAdapter = new ImageAdapter(this, 9, 100);
     TicTacToe ticTacToe = new TicTacToe(this,imageAdapter,9,100);
+    // 9 100 //16 75// 25 60 // 36 50 // 49 43 // 64 37 / 81 33 / 100 30
+    private SharedPreferences preferences;
 
+    // Method for getting view from GridView by position //stackoverflow
     public static View getViewByPosition(int pos, GridView listView) {
         final int firstListItemPosition = listView.getFirstVisiblePosition();
         final int lastListItemPosition = firstListItemPosition + listView.getChildCount() - 1;
@@ -44,14 +50,32 @@ public class MainActivity extends AppCompatActivity {
         return px;
     }
 
+    private void saveDataToSharedPreferences(String data) {
+        SharedPreferences.Editor preferencesEditor = preferences.edit();
+        preferencesEditor.putString(PREFERENCES_TEXT_FIELD, data);
+        preferencesEditor.apply();
+    }
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        preferences = getSharedPreferences(PREFERENCES_NAME, Activity.MODE_PRIVATE);
+        mode = Boolean.parseBoolean(preferences.getString(PREFERENCES_TEXT_FIELD, "true"));
+
         //Setting yourTurnButton
         final ImageButton yourTurnButton = (ImageButton) findViewById(R.id.yourTurnButton);
         yourTurnButton.setImageResource(ticTacToe.ticTacToeSwitch);
 
+        final TextView yourTurnTextView = (TextView) findViewById(R.id.yourTournTextView);
+
         Button switchModeButton = (Button) findViewById(R.id.switchModeButton);
+        if (mode) {
+            switchModeButton.setText("Player vs Player");
+        } else {
+            switchModeButton.setText("Player vs Computer");
+            yourTurnButton.setVisibility(View.GONE);
+        }
 
         //Drawing a board
         final GridView boardGridView = (GridView) findViewById(R.id.gridview);
@@ -73,73 +97,19 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Button button = (Button) v;
-                button.setText("Player vs Computer");
-                mode = false;
-                for (int i = 0; i < 9; i++) {
-                    ticTacToe.score[i] = 0;
-                    ImageView imageView = (ImageView) getViewByPosition(i, boardGridView);
-                    imageView.setImageResource(R.drawable.ic_background_black_50dp);
-                }
-
+                mode = !mode;
+                saveDataToSharedPreferences(mode + "");
+                MainActivity.this.recreate();
             }
         });
 
 
-
         boardGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-
                 if (mode) {
-                    //onClick action for 2 players on one device
-                    int player = ticTacToe.ticTacToeSwitch;
-                    ImageView view = (ImageView) v;
-                    view.setImageResource(player);
-                    view.setOnClickListener(null);
-                    ticTacToe.score[position] = player;
-                    if (ticTacToe.checkForWinner(player)) {
-                        ticTacToe.showWinner(player);
-                    }
-                    ticTacToe.moveCount++;
-                    if (ticTacToe.moveCount == 9) {
-                        ticTacToe.showWinner(0);
-                    }
-                    yourTurnButton.setImageResource(ticTacToe.ticTacToeSwitch());
+                    actionForTwoPlayers((ImageView) v, position, yourTurnButton);
                 } else {
-
-                    //On click action for AI vs player
-                    int player = ticTacToe.ticTacToeSwitch;
-                    ImageView view = (ImageView) v;
-                    view.setImageResource(player);
-                    view.setOnClickListener(null);
-                    ticTacToe.score[position] = player;
-                    if (ticTacToe.checkForWinner(player)) {
-                        ticTacToe.showWinner(player);
-                    }
-
-                    ticTacToe.moveCount++;
-                    if (ticTacToe.moveCount == 5) {
-                        ticTacToe.showWinner(0);
-                    }
-                    yourTurnButton.setImageResource(player);
-                    Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            int[] temp = ticTacToe.minimax(TicTacToe.xPlayer, 0);
-                            int computerMove = temp[1];
-                            int computer = ticTacToe.ticTacToeSwitch();
-                            ticTacToe.score[computerMove] = computer;
-                            ImageView imageView = (ImageView) getViewByPosition(computerMove, boardGridView);
-                            imageView.setImageResource(computer);
-                            if (ticTacToe.checkForWinner(computer)) {
-                                ticTacToe.showWinner(computer);
-                            }
-                            ticTacToe.ticTacToeSwitch();
-                        }
-
-                    }, 700); // 5000ms delay
-
+                    actionsForPlayerVsComputer((ImageView) v, position, yourTurnButton, yourTurnTextView, boardGridView);
                 }
             }
         });
@@ -147,4 +117,62 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //On click action for AI vs player
+    private void actionsForPlayerVsComputer(ImageView v, int position, ImageButton yourTurnButton, final TextView yourTournTextView, final GridView boardGridView) {
+        int player = ticTacToe.ticTacToeSwitch;
+        v.setImageResource(player);
+        v.setOnClickListener(null);
+        ticTacToe.board[position] = player;
+        if (ticTacToe.checkForWinner(player)) {
+            ticTacToe.showWinner(player);
+        }
+
+        ticTacToe.moveCount++;
+        if (ticTacToe.moveCount == 5) {
+            ticTacToe.showWinner(0);
+            return;
+        }
+        //yourTurnButton.setImageResource(player);//////TODO
+        imageAdapter.isNotGridClicable = true;
+        yourTournTextView.setText("Computer Move");
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                int[] temp = ticTacToe.minimax(TicTacToe.xPlayer, 0);
+                int computerMove = temp[1];
+                int computer = ticTacToe.ticTacToeSwitch();
+                ticTacToe.board[computerMove] = computer;
+                ImageView imageView = (ImageView) getViewByPosition(computerMove, boardGridView);
+                imageView.setImageResource(computer);
+                imageView.setOnClickListener(null);
+                if (ticTacToe.checkForWinner(computer)) {
+                    ticTacToe.showWinner(computer);
+                }
+                ticTacToe.ticTacToeSwitch();
+                Log.d("Minimax", temp[0] + " " + computerMove);
+                imageAdapter.isNotGridClicable = false;
+                yourTournTextView.setText("Your Move");
+            }
+
+        }, 700); // 7000ms delay
+
+    }
+
+    //onClick action for 2 players on one device
+    private void actionForTwoPlayers(ImageView v, int position, ImageButton yourTurnButton) {
+        int player = ticTacToe.ticTacToeSwitch;
+        v.setImageResource(player);
+        v.setOnClickListener(null);
+        ticTacToe.board[position] = player;
+        if (ticTacToe.checkForWinner(player)) {
+            ticTacToe.showWinner(player);
+        }
+        ticTacToe.moveCount++;
+        if (ticTacToe.moveCount == 9) {
+            ticTacToe.showWinner(0);
+        }
+        yourTurnButton.setImageResource(ticTacToe.ticTacToeSwitch());
+    }
 }
