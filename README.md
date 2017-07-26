@@ -1,7 +1,8 @@
 # TicTacToe for Android
 
 Simple TicTacToe game for Android platform.
-Play with your friend on 3x3 grid on one device or against computer.
+
+You can play with your friend or against computer on 3x3 grid .
 
 ## Getting Started
 
