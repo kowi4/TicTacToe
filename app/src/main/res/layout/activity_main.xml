@@ -1,26 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_centerHorizontal="true"
-    android:layout_gravity="center"
-    android:background="@color/colorPrimary"
-    android:gravity="center">
+    android:background="@color/colorPrimary">
 
+    <Button
+        android:id="@+id/switchModeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="8dp"
+        android:text="Player vs Player" />
 
-    <GridView
-        android:id="@+id/gridview"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
-        android:background="#e5e5e5"
-        android:numColumns="3"
+    <LinearLayout
+        android:id="@+id/yourTurnLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/switchModeButton"
+        android:gravity="center"
+        android:orientation="horizontal">
 
-        android:stretchMode="columnWidth" />
+        <ImageButton
+            android:id="@+id/yourTurnButton"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="#ffffff"
+            android:scaleType="fitCenter" />
 
+        <TextView
+            android:id="@+id/yourTournTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="10dp"
+            android:text="Your Turn"
+            android:textColor="#FFFF00"
+            android:textSize="30dp" />
 
-</LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20dp"
+        android:gravity="center">
+
+        <GridView
+            android:id="@+id/gridview"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_weight="5"
+            android:background="#e5e5e5"
+            android:numColumns="3"
+            android:stretchMode="columnWidth" />
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent">
+
+        <pl.droidsonroids.gif.GifImageView
+            android:id="@+id/winImage"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="20dp"
+            android:gravity="center"
+            android:text="asd"
+            android:visibility="gone" />
+    </RelativeLayout>
+</RelativeLayout>
