@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimary"
-    android:gravity="center"
-    android:orientation="vertical">
+    android:background="@color/colorPrimary">
 
     <Button
         android:id="@+id/switchModeButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
         android:layout_margin="8dp"
         android:text="Player vs Player" />
+
     <LinearLayout
+        android:id="@+id/yourTurnLayout"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/switchModeButton"
         android:gravity="center"
         android:orientation="horizontal">
 
@@ -38,11 +38,11 @@
 
     </LinearLayout>
 
-
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="5"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20dp"
         android:gravity="center">
 
         <GridView
@@ -60,5 +60,20 @@
 
     </LinearLayout>
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent">
 
-</LinearLayout>
+        <pl.droidsonroids.gif.GifImageView
+            android:id="@+id/winImage"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="20dp"
+            android:gravity="center"
+            android:text="asd"
+            android:visibility="gone" />
+    </RelativeLayout>
+</RelativeLayout>
